@@ -5,9 +5,12 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
+
+
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -25,20 +28,25 @@ import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+//import com.google.android.gms.tasks.OnFailureListener;
+//import com.google.android.gms.tasks.OnSuccessListener;
+//import com.google.android.gms.vision.label.internal.client.ImageLabelerOptions;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.firebase.ml.modeldownloader.CustomModel;
+//import com.google.firebase.ml.modeldownloader.CustomModel;
 import com.google.firebase.ml.modeldownloader.CustomModelDownloadConditions;
 import com.google.firebase.ml.modeldownloader.DownloadType;
 import com.google.firebase.ml.modeldownloader.FirebaseModelDownloader;
+import com.google.mlkit.common.model.LocalModel;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.label.ImageLabel;
 import com.google.mlkit.vision.label.ImageLabeler;
+//import com.google.mlkit.vision.label.ImageLabelerOptionsBase;
 import com.google.mlkit.vision.label.ImageLabeling;
-import com.google.mlkit.vision.label.defaults.ImageLabelerOptions;
+import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions;
+//import com.google.mlkit.vision.label.ImageLabelerOptions;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -51,11 +59,14 @@ public class CameraActivity extends AppCompatActivity {
 
     private PreviewView previewView;
     private ActivityResultLauncher<Intent> cameraLauncher;
-    private CustomModel customModel;
+//    private CustomModel customModel;
 
     private ExecutorService cameraExecutor;
     private ImageLabeler labeler;
+//    private LocalModel localModel;
 
+    public CameraActivity() {
+    }
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -112,27 +123,38 @@ public class CameraActivity extends AppCompatActivity {
 
                 FirebaseModelDownloader.getInstance()
                         .getModel("wishwash", DownloadType.LOCAL_MODEL_UPDATE_IN_BACKGROUND, conditions)
-                        .addOnSuccessListener(new OnSuccessListener<CustomModel>() {
-                            @Override
-                            public void onSuccess(CustomModel model) {
-                                // 모델 다운로드가 완료되었습니다. 여기에서 원하는 작업을 수행할 수 있습니다.
-                                // 예를 들어, 사용자 정의 모델을 사용하도록 설정하거나 원격 모델로 전환할 수 있습니다.
+                        .addOnSuccessListener(customModel -> {
+                            // 모델 다운로드가 완료되었습니다. 여기에서 원하는 작업을 수행할 수 있습니다.
+
+                            String modelPath = customModel.getLocalFilePath();
+
+                            if (modelPath != null) {
+                                // CustomLocalModel을 사용하여 모델 로드
+                                LocalModel localModel = new LocalModel.Builder()
+                                        .setAssetFilePath(modelPath)
+                                        .build();
 
                                 // Set the ImageLabelerOptions.
-                                ImageLabelerOptions options = new ImageLabelerOptions.Builder()
+                                CustomImageLabelerOptions options = new CustomImageLabelerOptions.Builder(localModel)
                                         .setConfidenceThreshold(0.5f)
                                         .build();
+
+                                // localModel을 사용하여 labeler 초기화
                                 labeler = ImageLabeling.getClient(options);
 
                                 bindCameraPreview(cameraProvider); // 이미지 분석기 설정과 함께 bindCameraPreview 메서드를 호출합니다.
+                            } else {
+                                Log.e(TAG, "Model path is null.");
                             }
                         })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                // 모델 다운로드가 실패하였습니다. 에러 처리를 수행합니다.
-                                Log.e(TAG, "Model download failed.", e);
-                            }
+                        .addOnFailureListener(e -> {
+                            // 모델 다운로드가 실패하였습니다. 에러 처리를 수행합니다.
+                            Log.e(TAG, "Model download failed.", e);
+                        })
+
+                        .addOnFailureListener(e -> {
+                            // 모델 다운로드가 실패하였습니다. 에러 처리를 수행합니다.
+                            Log.e(TAG, "Model download failed.", e);
                         });
             } catch (ExecutionException | InterruptedException e) {
                 Log.e(TAG, "Error binding camera.", e);
@@ -159,6 +181,28 @@ public class CameraActivity extends AppCompatActivity {
             Bitmap bitmap = imageProxyToBitmap(imageProxy);
 
             if (bitmap != null) {
+                Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 224, 224, true);
+                ByteBuffer inputBuffer = ByteBuffer.allocateDirect(224 * 224 * 3 * 4).order(ByteOrder.nativeOrder());
+                for (int y = 0; y < 224; y++) {
+                    for (int x = 0; x < 224; x++) {
+                        int px = scaledBitmap.getPixel(x, y);
+
+                        // Get channel values from the pixel value.
+                        int r = Color.red(px);
+                        int g = Color.green(px);
+                        int b = Color.blue(px);
+
+                        // Normalize channel values to [-1.0, 1.0].
+                        float rf = (r - 127) / 255.0f;
+                        float gf = (g - 127) / 255.0f;
+                        float bf = (b - 127) / 255.0f;
+
+                        inputBuffer.putFloat(rf);
+                        inputBuffer.putFloat(gf);
+                        inputBuffer.putFloat(bf);
+                    }
+                }
+
                 labeler.process(InputImage.fromBitmap(bitmap, 0))
                         .addOnSuccessListener(labels -> {
                             if (labels.isEmpty()) {
@@ -298,7 +342,6 @@ public class CameraActivity extends AppCompatActivity {
                 });
 
     }
-
 
 
 }
