@@ -13,9 +13,11 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        mavenCentral()
         maven {
-            url 'https://maven.google.com'
-        }
+            url 'https://naver.jfrog.io/artifactory/maven/'
+            }
+        maven { url 'https://maven.google.com' }
     }
 }
 rootProject.name = "WISHWASH"

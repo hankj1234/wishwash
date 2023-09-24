@@ -53,6 +53,8 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation platform('com.google.firebase:firebase-bom:32.0.0')
 
+    //네이버지도
+    implementation 'com.naver.maps:map-sdk:3.17.0'
 
     implementation 'com.google.firebase:firebase-analytics'
     //implementation 'com.kakao.sdk:v2-map:1.4.2@aar'
