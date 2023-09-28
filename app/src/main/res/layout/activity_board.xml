@@ -67,14 +67,6 @@
         android:background="#ffffff"
         android:orientation="horizontal">
 
-        <ImageButton
-            android:id="@+id/bt_b1"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
-            android:layout_margin="12dp"
-            android:background="#00ffffff"
-            android:scaleType="fitCenter"
-            android:src="@drawable/button_2" />
 
         <ImageButton
             android:id="@+id/bt_b2"
@@ -93,15 +85,6 @@
             android:background="#00ffffff"
             android:scaleType="fitCenter"
             android:src="@drawable/button_4" />
-
-        <ImageButton
-            android:id="@+id/bt_b4"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
-            android:layout_margin="12dp"
-            android:background="#00ffffff"
-            android:scaleType="fitCenter"
-            android:src="@drawable/button_5" />
 
     </LinearLayout>
 

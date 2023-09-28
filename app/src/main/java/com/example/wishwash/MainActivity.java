@@ -22,12 +22,6 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        ImageButton bt_2 = findViewById(R.id.bt_2);
-        bt_2.setOnClickListener(view -> {
-            Intent intent = new Intent(getApplicationContext(), BasketActivity.class);
-            startActivity(intent);
-        });
-
         ImageButton bt_3 = findViewById(R.id.bt_3);
         bt_3.setOnClickListener(view -> {
             Intent intent = new Intent(getApplicationContext(), MapActivity.class);
@@ -40,10 +34,5 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        ImageButton bt_5 = findViewById(R.id.bt_5);
-        bt_5.setOnClickListener(view -> {
-            Intent intent = new Intent(getApplicationContext(), UserActivity.class);
-            startActivity(intent);
-        });
     }
 }
