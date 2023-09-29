@@ -48,6 +48,17 @@ class CameraActivity : AppCompatActivity() {
         setCamera()
     }
 
+    private fun setPermissions() {
+        val permissions = ArrayList<String>()
+        permissions.add(android.Manifest.permission.CAMERA)
+
+        permissions.forEach {
+            if (ActivityCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, permissions.toTypedArray(), PERMISSION)
+            }
+        }
+    }
+
     private fun setCamera() {
         //카메라 제공 객체
         val processCameraProvider = ProcessCameraProvider.getInstance(this).get()
@@ -122,20 +133,14 @@ class CameraActivity : AppCompatActivity() {
                 if (it != PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this, "권한을 허용하지 않으면 사용할 수 없습니다", Toast.LENGTH_SHORT).show()
                     finish()
+                } else {
+                    // 권한이 허용되면 카메라를 켜도록 호출
+                    setCamera()
                 }
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
-    private fun setPermissions() {
-        val permissions = ArrayList<String>()
-        permissions.add(android.Manifest.permission.CAMERA)
 
-        permissions.forEach {
-            if (ActivityCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, permissions.toTypedArray(), PERMISSION)
-            }
-        }
-    }
 }

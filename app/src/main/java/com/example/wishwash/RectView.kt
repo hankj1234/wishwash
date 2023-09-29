@@ -69,7 +69,7 @@ class RectView(context: Context, attributeSet: AttributeSet) : View(context, att
                 0, 45, 18, 19, 22, 30, 42, 43, 44, 61, 71, 72 -> Color.WHITE
                 1, 3, 14, 25, 37, 38, 79 -> Color.BLUE
                 2, 9, 10, 11, 32, 47, 49, 51, 52 -> Color.RED
-                // ... (rest of your colors)
+                // … (rest of your colors)
                 else -> Color.DKGRAY
             }
             paint

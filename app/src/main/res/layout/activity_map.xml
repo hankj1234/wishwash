@@ -21,13 +21,15 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:hint="장소 검색" />
+            android:hint="@string/hint_search_location"
+            android:inputType="text"
+            android:autofillHints="name" />
 
         <Button
             android:id="@+id/search_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="검색" />
+            android:text="@string/label_search" />
     </LinearLayout>
 
 </RelativeLayout>

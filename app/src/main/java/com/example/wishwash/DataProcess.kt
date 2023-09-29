@@ -12,6 +12,14 @@ import java.nio.FloatBuffer
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
+import android.graphics.YuvImage
+import android.graphics.ImageFormat
+import java.io.ByteArrayOutputStream
+import android.graphics.BitmapFactory
+import java.nio.ByteBuffer
+import android.graphics.Rect
+
+import androidx.core.graphics.drawable.toBitmap
 
 class DataProcess(val context: Context) {
 
@@ -24,19 +32,38 @@ class DataProcess(val context: Context) {
         const val FILE_NAME = "wishwash.onnx"
         const val LABEL_NAME = "yolov8n.txt"
     }
-
-    fun imageToBitmap(imageProxy: ImageProxy): Bitmap {
-        val bitmap = imageProxy.toBitmap()
-        return Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, true)
+    private fun ByteBuffer.toByteArray(): ByteArray {
+        rewind()
+        val data = ByteArray(remaining())
+        get(data)
+        return data
+    }
+    fun imageToBitmap(image: ImageProxy): Bitmap {
+        val yuvImage = YuvImage(
+            image.planes[0].buffer.toByteArray(),
+            ImageFormat.NV21,
+            image.width,
+            image.height,
+            null
+        )
+        val out = ByteArrayOutputStream()
+        yuvImage.compressToJpeg(Rect(0, 0, image.width, image.height), 100, out)
+        val yuvBytes = out.toByteArray()
+        return BitmapFactory.decodeByteArray(yuvBytes, 0, yuvBytes.size)
     }
 
     fun bitmapToFloatBuffer(bitmap: Bitmap): FloatBuffer {
         val imageSTD = 255.0f
+
+        var processedBitmap = bitmap
+        if (bitmap.width != INPUT_SIZE || bitmap.height != INPUT_SIZE) {
+            processedBitmap = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, true)
+        }
+
         val buffer = FloatBuffer.allocate(BATCH_SIZE * PIXEL_SIZE * INPUT_SIZE * INPUT_SIZE)
         val area = INPUT_SIZE * INPUT_SIZE
         val bitmapData = IntArray(area)
-
-        bitmap.getPixels(bitmapData, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+        processedBitmap.getPixels(bitmapData, 0, INPUT_SIZE, 0, 0, INPUT_SIZE, INPUT_SIZE)
 
         for (i in 0..INPUT_SIZE - 1) {
             for (j in 0..INPUT_SIZE - 1) {

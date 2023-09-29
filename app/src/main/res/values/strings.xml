@@ -7,4 +7,6 @@
     <string name="label_text">Label: %1$s, Text: %2$s</string>
     <string name="label">라벨: %1$s</string>
     <string name="confidence">신뢰도: %1$s</string>
+    <string name="hint_search_location">장소 검색</string>
+    <string name="label_search">검색</string>
 </resources>
