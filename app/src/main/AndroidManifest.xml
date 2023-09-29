@@ -26,6 +26,7 @@
         android:theme="@style/Theme.WISHWASH"
         android:usesCleartextTraffic="true"
         android:configChanges="orientation|keyboardHidden"
+
         tools:targetApi="31">
         <activity
             android:name=".LoadActivity"
@@ -47,7 +48,7 @@
             android:exported="true">
         </activity>
 
-        <activity android:name="net.daum.android.map.MapActivity">
+        <activity android:name="com.example.wishwash.MapActivity">
         </activity>
 
         <activity android:name="com.example.wishwash.BoardActivity">
