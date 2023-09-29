@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.widget.ImageButton;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.camera.core.Camera;
 import androidx.camera.core.ExperimentalGetImage;
 
 
@@ -19,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
 
         ImageButton bt_1 = findViewById(R.id.bt_1);
         bt_1.setOnClickListener(view -> {
-            Intent intent = new Intent(getApplicationContext(), Camera.class);
+            Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
             startActivity(intent);
         });
 

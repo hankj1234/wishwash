@@ -1,9 +1,7 @@
-package com.example.wishwash;
+package com.example.wishwash
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import java.nio.ByteBuffer
 import android.graphics.RectF
 import androidx.camera.core.ImageProxy
 import java.io.BufferedReader
@@ -23,83 +21,70 @@ class DataProcess(val context: Context) {
         const val BATCH_SIZE = 1
         const val INPUT_SIZE = 640
         const val PIXEL_SIZE = 3
-        const val FILE_NAME = "yolov8n.onnx"
+        const val FILE_NAME = "wishwash.onnx"
         const val LABEL_NAME = "yolov8n.txt"
     }
 
-    fun imageToBitmap(imageProxy: ImageProxy): Bitmap? {
+    fun imageToBitmap(imageProxy: ImageProxy): Bitmap {
         val bitmap = imageProxy.toBitmap()
-        return bitmap?.let { Bitmap.createScaledBitmap(it, INPUT_SIZE, INPUT_SIZE, true) }
-    }
-
-    fun ImageProxy.toBitmap(): Bitmap? {
-        val buffer: ByteBuffer = planes[0].buffer
-        buffer.rewind()
-        val bytes = ByteArray(buffer.capacity())
-        buffer.get(bytes)
-        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        return Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, true)
     }
 
     fun bitmapToFloatBuffer(bitmap: Bitmap): FloatBuffer {
         val imageSTD = 255.0f
         val buffer = FloatBuffer.allocate(BATCH_SIZE * PIXEL_SIZE * INPUT_SIZE * INPUT_SIZE)
-        buffer.rewind()
-
         val area = INPUT_SIZE * INPUT_SIZE
-        val bitmapData = IntArray(area) //한 사진에서 대한 정보, 640x640 사이즈
-        bitmap.getPixels(
-            bitmapData,
-            0,
-            bitmap.width,
-            0,
-            0,
-            bitmap.width,
-            bitmap.height
-        ) // 배열에 정보 담기
+        val bitmapData = IntArray(area)
 
-        //배열에서 하나씩 가져와서 buffer 에 담기
-        for (i in 0 until INPUT_SIZE - 1) {
-            for (j in 0 until INPUT_SIZE - 1) {
+        bitmap.getPixels(bitmapData, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+
+        for (i in 0..INPUT_SIZE - 1) {
+            for (j in 0..INPUT_SIZE - 1) {
                 val idx = INPUT_SIZE * i + j
                 val pixelValue = bitmapData[idx]
-                // 위에서 부터 차례대로 R 값 추출, G 값 추출, B값 추출 -> 255로 나누어서 0~1 사이로 정규화
                 buffer.put(idx, ((pixelValue shr 16 and 0xff) / imageSTD))
                 buffer.put(idx + area, ((pixelValue shr 8 and 0xff) / imageSTD))
                 buffer.put(idx + area * 2, ((pixelValue and 0xff) / imageSTD))
-                //원리 bitmap == ARGB 형태의 32bit, R값의 시작은 16bit (16 ~ 23bit 가 R영역), 따라서 16bit 를 쉬프트
-                //그럼 A값이 사라진 RGB 값인 24bit 가 남는다. 이후 255와 AND 연산을 통해 맨 뒤 8bit 인 R값만 가져오고, 255로 나누어 정규화를 한다.
-                //다시 8bit 를 쉬프트 하여 R값을 제거한 G,B 값만 남은 곳에 다시 AND 연산, 255 정규화, 다시 반복해서 RGB 값을 buffer 에 담는다.
             }
         }
-        buffer.rewind() // position 0
+
+        buffer.rewind()
         return buffer
     }
 
     fun loadModel() {
-        // onnx 파일 불러오기
-        val assetManager = context.assets
-        val outputFile = File(context.filesDir.toString() + "/" + FILE_NAME)
+        try {
+            val assetManager = context.assets
+            val outputFile = File(context.filesDir, FILE_NAME)
 
-        assetManager.open(FILE_NAME).use { inputStream ->
-            FileOutputStream(outputFile).use { outputStream ->
-                val buffer = ByteArray(4 * 1024)
-                var read: Int
-                while (inputStream.read(buffer).also { read = it } != -1) {
-                    outputStream.write(buffer, 0, read)
+            assetManager.open(FILE_NAME).use { inputStream ->
+                FileOutputStream(outputFile).use { outputStream ->
+                    val buffer = ByteArray(4 * 1024)
+                    var read: Int
+                    while (inputStream.read(buffer).also { read = it } != -1) {
+                        outputStream.write(buffer, 0, read)
+                    }
                 }
             }
+        } catch (e: Exception) {
+            // Handle the error or inform the user
+            e.printStackTrace()
         }
     }
 
     fun loadLabel() {
-        // txt 파일 불러오기
-        BufferedReader(InputStreamReader(context.assets.open(LABEL_NAME))).use { reader ->
-            var line: String?
-            val classList = ArrayList<String>()
-            while (reader.readLine().also { line = it } != null) {
-                classList.add(line!!)
+        try {
+            BufferedReader(InputStreamReader(context.assets.open(LABEL_NAME))).use { reader ->
+                val classList = ArrayList<String>()
+                var line: String?
+                while (reader.readLine().also { line = it } != null) {
+                    classList.add(line!!)
+                }
+                classes = classList.toTypedArray()
             }
-            classes = classList.toTypedArray()
+        } catch (e: Exception) {
+            // Handle the error or inform the user
+            e.printStackTrace()
         }
     }
 
@@ -226,4 +211,3 @@ class DataProcess(val context: Context) {
         return right - left
     }
 }
-
