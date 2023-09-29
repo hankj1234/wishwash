@@ -1,32 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
-    android:orientation="vertical">
+    tools:context=".MainActivity">
 
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
         android:layout_width="match_parent"
-        android:layout_height="680dp" />
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/btn_photo"
+    <com.example.wishwash.RectView
+        android:id="@+id/rectView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="사진 찍기"
-        android:onClick="onClickPhotoButton" />
-    <TextView
-        android:id="@+id/resultTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="">
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    </TextView>
-
-
-
-
-
-
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
