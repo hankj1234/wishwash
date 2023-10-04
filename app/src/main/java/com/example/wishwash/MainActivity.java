@@ -22,8 +22,6 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-
-
         ImageButton bt_3 = findViewById(R.id.bt_3);
         bt_3.setOnClickListener(view -> {
             Intent intent = new Intent(getApplicationContext(), MapActivity.class);
@@ -35,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(getApplicationContext(), BoardActivity.class);
             startActivity(intent);
         });
-
 
     }
 }

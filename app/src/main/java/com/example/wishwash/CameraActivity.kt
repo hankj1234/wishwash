@@ -49,13 +49,14 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun setPermissions() {
-        val permissions = ArrayList<String>()
-        permissions.add(android.Manifest.permission.CAMERA)
+        val permissions = arrayListOf(android.Manifest.permission.CAMERA)
 
-        permissions.forEach {
-            if (ActivityCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, permissions.toTypedArray(), PERMISSION)
-            }
+        val notGrantedPermissions = permissions.filter {
+            ActivityCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+
+        if (notGrantedPermissions.isNotEmpty()) {
+            ActivityCompat.requestPermissions(this, notGrantedPermissions.toTypedArray(), PERMISSION)
         }
     }
 
@@ -102,6 +103,9 @@ class CameraActivity : AppCompatActivity() {
         )
         val inputTensor = OnnxTensor.createTensor(ortEnvironment, floatBuffer, shape)
         val resultTensor = session.run(Collections.singletonMap(inputName, inputTensor))
+
+        inputTensor.close()
+
         val outputs = resultTensor.get(0).value as Array<*> // [1 84 8400]
         val results = dataProcess.outputsToNPMSPredictions(outputs)
 
@@ -111,16 +115,19 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun load() {
-        dataProcess.loadModel() // onnx 모델 불러오기
-        dataProcess.loadLabel() // coco txt 파일 불러오기
+        try {
+            dataProcess.loadModel() // onnx 모델 불러오기
+            dataProcess.loadLabel() // coco txt 파일 불러오기
 
-        ortEnvironment = OrtEnvironment.getEnvironment()
-        session = ortEnvironment.createSession(
-            this.filesDir.absolutePath.toString() + "/" + DataProcess.FILE_NAME,
-            OrtSession.SessionOptions()
-        )
-
-        rectView.setClassLabel(dataProcess.classes)
+            ortEnvironment = OrtEnvironment.getEnvironment()
+            session = ortEnvironment.createSession(
+                this.filesDir.absolutePath + "/" + DataProcess.FILE_NAME,
+                OrtSession.SessionOptions()
+            )
+            rectView.setClassLabel(dataProcess.classes)
+        } catch (e: Exception) {
+            Toast.makeText(this, "모델 또는 레이블 불러오기 실패: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onRequestPermissionsResult(

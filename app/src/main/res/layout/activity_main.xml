@@ -22,13 +22,13 @@
 
     <LinearLayout
         android:layout_width="450dp"
-        android:layout_height="450dp"
+        android:layout_height="350dp"
         android:layout_gravity="center"
         android:layout_marginBottom="55dp">
 
         <ImageButton
             android:id="@+id/bt_1"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:src="@drawable/button_1"
             android:layout_marginTop="10dp"
@@ -40,25 +40,28 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:background="#ffffff"
-        android:orientation="horizontal">
+        android:layout_height="100dp"
+        android:layout_marginTop="-50dp">
 
 
         <ImageButton
             android:id="@+id/bt_3"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
             android:layout_margin="12dp"
             android:background="#00ffffff"
             android:scaleType="fitCenter"
             android:src="@drawable/button_3" />
 
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"/>
+
         <ImageButton
             android:id="@+id/bt_4"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
             android:layout_margin="12dp"
             android:background="#00ffffff"
             android:scaleType="fitCenter"
@@ -66,6 +69,16 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/bottom"
+            android:layout_marginBottom="00dp"/>
+    </LinearLayout>
 
 </LinearLayout>
-

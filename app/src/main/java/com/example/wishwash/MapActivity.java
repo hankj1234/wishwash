@@ -17,9 +17,12 @@ import androidx.core.content.ContextCompat;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.naver.maps.geometry.LatLng;
-import com.naver.maps.map.CameraPosition;
 import com.naver.maps.map.LocationTrackingMode;
 import com.naver.maps.map.overlay.Marker;
+
+import java.util.Arrays;
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -34,8 +37,9 @@ public class MapActivity extends AppCompatActivity {
 
     private FusedLocationProviderClient fusedLocationClient;
     private com.naver.maps.map.MapView mapView;
-
     private final Marker currentLocationMarker = new Marker();
+    private final List<String> keywords = Arrays.asList("세탁방", "빨래방", "세탁소", "코인빨래방");
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,15 +113,23 @@ public class MapActivity extends AppCompatActivity {
     }
 
     private void searchNearbyLaundries() {
-        String query = "세탁방";
+        for (String keyword : keywords) {
+            searchByKeyword(keyword);
+        }
+    }
 
-        NaverSearchAPI api = new Retrofit.Builder()
-                .baseUrl("https://naveropenapi.apigw.ntruss.com/")
+    private void searchByKeyword(String keyword) {
+        int radius = 10000; // 10km
+
+        // Retrofit 객체 생성
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://openapi.naver.com/")
                 .addConverterFactory(GsonConverterFactory.create())
-                .build()
-                .create(NaverSearchAPI.class);
+                .build();
 
-        api.searchPlace(CLIENT_ID, CLIENT_SECRET, query).enqueue(new Callback<SearchResponse>() {
+        NaverSearchAPI api = retrofit.create(NaverSearchAPI.class);
+
+        api.searchPlace(CLIENT_ID, CLIENT_SECRET, keyword, radius).enqueue(new Callback<SearchResponse>() {
             @Override
             public void onResponse(@NonNull Call<SearchResponse> call, @NonNull Response<SearchResponse> response) {
                 if (response.isSuccessful() && response.body() != null && !response.body().getItems().isEmpty()) {
@@ -130,15 +142,16 @@ public class MapActivity extends AppCompatActivity {
                         }
                     });
                 } else {
-                    Toast.makeText(MapActivity.this, "세탁방 검색 결과를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MapActivity.this, keyword + "이 없습니다.", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<SearchResponse> call, @NonNull Throwable t) {
                 Log.e("Search Error", t.getMessage());
-                Toast.makeText(MapActivity.this, "세탁방 검색 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MapActivity.this, keyword + " 검색 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
             }
         });
     }
+
 }
