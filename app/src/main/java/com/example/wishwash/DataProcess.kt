@@ -2,24 +2,22 @@ package com.example.wishwash
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ImageFormat
+import android.graphics.Rect
 import android.graphics.RectF
+import android.graphics.YuvImage
 import androidx.camera.core.ImageProxy
 import java.io.BufferedReader
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStreamReader
+import java.nio.ByteBuffer
 import java.nio.FloatBuffer
-import java.util.*
+import java.util.PriorityQueue
 import kotlin.math.max
 import kotlin.math.min
-import android.graphics.YuvImage
-import android.graphics.ImageFormat
-import java.io.ByteArrayOutputStream
-import android.graphics.BitmapFactory
-import java.nio.ByteBuffer
-import android.graphics.Rect
-
-import androidx.core.graphics.drawable.toBitmap
 
 class DataProcess(val context: Context) {
 
@@ -65,8 +63,8 @@ class DataProcess(val context: Context) {
         val bitmapData = IntArray(area)
         processedBitmap.getPixels(bitmapData, 0, INPUT_SIZE, 0, 0, INPUT_SIZE, INPUT_SIZE)
 
-        for (i in 0..INPUT_SIZE - 1) {
-            for (j in 0..INPUT_SIZE - 1) {
+        for (i in 0 until INPUT_SIZE) {
+            for (j in 0 until INPUT_SIZE) {
                 val idx = INPUT_SIZE * i + j
                 val pixelValue = bitmapData[idx]
                 buffer.put(idx, ((pixelValue shr 16 and 0xff) / imageSTD))

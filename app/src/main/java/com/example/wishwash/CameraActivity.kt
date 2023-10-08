@@ -3,7 +3,6 @@ package com.example.wishwash
 import ai.onnxruntime.OnnxTensor
 import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtSession
-import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.WindowManager
@@ -28,7 +27,6 @@ class CameraActivity : AppCompatActivity() {
         const val PERMISSION = 1
     }
 
-    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_camera)
@@ -46,18 +44,6 @@ class CameraActivity : AppCompatActivity() {
 
         // 카메라 켜기
         setCamera()
-    }
-
-    private fun setPermissions() {
-        val permissions = arrayListOf(android.Manifest.permission.CAMERA)
-
-        val notGrantedPermissions = permissions.filter {
-            ActivityCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
-        }
-
-        if (notGrantedPermissions.isNotEmpty()) {
-            ActivityCompat.requestPermissions(this, notGrantedPermissions.toTypedArray(), PERMISSION)
-        }
     }
 
     private fun setCamera() {
@@ -103,9 +89,6 @@ class CameraActivity : AppCompatActivity() {
         )
         val inputTensor = OnnxTensor.createTensor(ortEnvironment, floatBuffer, shape)
         val resultTensor = session.run(Collections.singletonMap(inputName, inputTensor))
-
-        inputTensor.close()
-
         val outputs = resultTensor.get(0).value as Array<*> // [1 84 8400]
         val results = dataProcess.outputsToNPMSPredictions(outputs)
 
@@ -115,19 +98,16 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun load() {
-        try {
-            dataProcess.loadModel() // onnx 모델 불러오기
-            dataProcess.loadLabel() // coco txt 파일 불러오기
+        dataProcess.loadModel() // onnx 모델 불러오기
+        dataProcess.loadLabel() // coco txt 파일 불러오기
 
-            ortEnvironment = OrtEnvironment.getEnvironment()
-            session = ortEnvironment.createSession(
-                this.filesDir.absolutePath + "/" + DataProcess.FILE_NAME,
-                OrtSession.SessionOptions()
-            )
-            rectView.setClassLabel(dataProcess.classes)
-        } catch (e: Exception) {
-            Toast.makeText(this, "모델 또는 레이블 불러오기 실패: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
+        ortEnvironment = OrtEnvironment.getEnvironment()
+        session = ortEnvironment.createSession(
+            this.filesDir.absolutePath.toString() + "/" + DataProcess.FILE_NAME,
+            OrtSession.SessionOptions()
+        )
+
+        rectView.setClassLabel(dataProcess.classes)
     }
 
     override fun onRequestPermissionsResult(
@@ -140,14 +120,20 @@ class CameraActivity : AppCompatActivity() {
                 if (it != PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this, "권한을 허용하지 않으면 사용할 수 없습니다", Toast.LENGTH_SHORT).show()
                     finish()
-                } else {
-                    // 권한이 허용되면 카메라를 켜도록 호출
-                    setCamera()
                 }
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
+    private fun setPermissions() {
+        val permissions = ArrayList<String>()
+        permissions.add(android.Manifest.permission.CAMERA)
 
+        permissions.forEach {
+            if (ActivityCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, permissions.toTypedArray(), PERMISSION)
+            }
+        }
+    }
 }
