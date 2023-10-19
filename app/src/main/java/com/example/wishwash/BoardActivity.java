@@ -1,7 +1,6 @@
 package com.example.wishwash;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -12,8 +11,6 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
-
-import com.example.wishwash.R;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -33,12 +30,11 @@ public class BoardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_board);
 
-        dp = (DatePicker) findViewById(R.id.datePicker);
-        btnWrite = (Button) findViewById(R.id.btnWrite);
-        edtDiary = (EditText) findViewById(R.id.edtDiary);
+        dp = findViewById(R.id.datePicker);
+        btnWrite = findViewById(R.id.btnWrite);
+        edtDiary = findViewById(R.id.edtDiary);
         setTitle("간단 메모장");
 
-        // Added ImageButton and their listeners
         ImageButton bt_b1 = findViewById(R.id.bt_b1);
         bt_b1.setOnClickListener(view -> {
             Intent intent = new Intent(getApplicationContext(), MapActivity.class);
@@ -55,35 +51,30 @@ public class BoardActivity extends AppCompatActivity {
         int cYear = cal.get(Calendar.YEAR);
         int cMonth = cal.get(Calendar.MONTH);
         int cday = cal.get(Calendar.DAY_OF_MONTH);
-        String filename1 = Integer.toString(cYear) + "_" + Integer.toString(cMonth + 1) + "_" + Integer.toString(cday) + ".txt";
-        String str1 = readDiary(filename1);
+
+        // 초기 파일명을 현재 날짜로 설정 (이 부분이 추가되었습니다)
+        filename = cYear + "_" + (cMonth + 1) + "_" + cday + ".txt";
+
+        String str1 = readDiary(filename);
         edtDiary.setText(str1);
         btnWrite.setEnabled(true);
 
-        dp.init(cYear, cMonth, cday, new DatePicker.OnDateChangedListener() {
-            @Override
-            public void onDateChanged(DatePicker datePicker, int i, int i1, int i2) {
-                filename = Integer.toString(i) + "_" + Integer.toString(i1 + 1) + "_" + Integer.toString(i2) + ".txt";
-                String str = readDiary(filename);
-                edtDiary.setText(str);
-                btnWrite.setEnabled(true);
-            }
+        dp.init(cYear, cMonth, cday, (datePicker, i, i1, i2) -> {
+            filename = i + "_" + (i1 + 1) + "_" + i2 + ".txt";
+            String str = readDiary(filename);
+            edtDiary.setText(str);
+            btnWrite.setEnabled(true);
         });
 
-        btnWrite.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    FileOutputStream outfs = openFileOutput(filename, Context.MODE_PRIVATE);
-                    String str = edtDiary.getText().toString();
-                    outfs.write(str.getBytes());
-                    outfs.close();
-                    Toast.makeText(getApplicationContext(), filename + "이 저장됨", Toast.LENGTH_SHORT).show();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        btnWrite.setOnClickListener(view -> {
+            try {
+                FileOutputStream outfs = openFileOutput(filename, Context.MODE_PRIVATE);
+                String str = edtDiary.getText().toString();
+                outfs.write(str.getBytes());
+                outfs.close();
+                Toast.makeText(getApplicationContext(), filename + "이 저장됨", Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
     }
@@ -93,10 +84,12 @@ public class BoardActivity extends AppCompatActivity {
         FileInputStream infs;
         try {
             infs = openFileInput(filename);
-            byte txt[] = new byte[500];
-            infs.read(txt);
+            byte[] txt = new byte[500];
+            int bytesRead = infs.read(txt);
+            if (bytesRead != -1) {
+                diaryStr = (new String(txt, 0, bytesRead)).trim();
+            }
             infs.close();
-            diaryStr = (new String(txt)).trim();
             btnWrite.setText("저장하기");
         } catch (FileNotFoundException e) {
             edtDiary.setHint("메모없음");
